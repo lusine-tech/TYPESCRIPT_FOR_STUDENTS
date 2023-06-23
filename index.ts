@@ -4,6 +4,22 @@ enum Roles {
   ADMIN = 'admin'
 }
 
+enum HTTP {
+  POST_METHOD = 'POST',
+  GET_METHOD = 'GET',
+
+  STATUS_OK = 200,
+  STATUS_INTERNAL_SERVER_ERROR = 500
+}
+
+type StatusOk = {
+  status: HTTP.STATUS_OK
+}
+
+type StatusInernalError = {
+  status: HTTP.STATUS_INTERNAL_SERVER_ERROR
+}
+
 interface IRequestBody {
   name: string;
   age: number;
@@ -17,7 +33,7 @@ interface IRequestParams {
 }
 
 interface IRequest {
-  method: string;
+  method: HTTP.POST_METHOD | HTTP.GET_METHOD;
   host: string;
   path: string;
   body?: IRequestBody;
@@ -26,7 +42,7 @@ interface IRequest {
 
 interface IHandlers {
   next: (value: IRequest) => void;
-  error: (error?: string) => void;
+  error: (error?: Error) => void;
   complete: () => void;
 }
 
@@ -63,7 +79,7 @@ class Observer implements ObserverWithUnsubscribeType {
     }
   }
 
-  error(error?: string) {
+  error(error?: Error) {
     console.log('error triggered');
 
     if (!this.isUnsubscribed) {
@@ -107,7 +123,7 @@ class Observable implements ObservableType {
       values.forEach((value) => observer.next(value));
 
       observer.complete();
-      observer.error('Error occurred'); // Pass an error message or object
+  
 
       return () => {
         console.log('unsubscribed');
@@ -128,11 +144,6 @@ class Observable implements ObservableType {
   }
 }
 
-const HTTP_POST_METHOD = 'POST';
-const HTTP_GET_METHOD = 'GET';
-
-const HTTP_STATUS_OK = 200;
-const HTTP_STATUS_INTERNAL_SERVER_ERROR = 500;
 
 const userMock: IRequestBody = {
   name: 'User Name',
@@ -144,14 +155,14 @@ const userMock: IRequestBody = {
 
 const requestsMock: IRequest[] = [
   {
-    method: HTTP_POST_METHOD,
+    method: HTTP.POST_METHOD,
     host: 'service.example',
     path: 'user',
     body: userMock,
     params: {}
   },
   {
-    method: HTTP_GET_METHOD,
+    method: HTTP.GET_METHOD,
     host: 'service.example',
     path: 'user',
     params: {
@@ -160,14 +171,14 @@ const requestsMock: IRequest[] = [
   }
 ];
 
-const handleRequest = (request: IRequest): { status: number } => {
+const handleRequest = (request: IRequest) => {
   // handling of request
-  return { status: HTTP_STATUS_OK };
+  return { status: HTTP.STATUS_OK };
 };
 
-const handleError = (error?: any): { status: number } => {
+const handleError = (error?: Error) => {
   // handling of error
-  return { status: HTTP_STATUS_INTERNAL_SERVER_ERROR };
+  return { status: HTTP.STATUS_INTERNAL_SERVER_ERROR };
 };
 
 const handleComplete = (): void => console.log('complete');
